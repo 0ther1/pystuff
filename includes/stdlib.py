@@ -14,7 +14,7 @@ def lerp(a, b, factor: float):
     else:
         return a + (b - a) * factor
     
-def lerpColor(color1: str, color2: str, factor: float) -> str:
+def lerp_color(color1: str, color2: str, factor: float) -> str:
     """Lieary interpolate between two colors by factor.
     `color1`: - color in hex value in form '#RRGGBB' to interpolate from
     `color2`: - color in hex value in form '#RRGGBB' to interpolate to
@@ -42,7 +42,7 @@ def clamp(value, floor, ceil):
     else:
         return value
 
-def clampUp(value, ceil):
+def clamp_up(value, ceil):
     """Clamp value by up limit.
     `value`: var - value to clamp
     `ceil`: var - upper limit."""    
@@ -51,7 +51,7 @@ def clampUp(value, ceil):
     else:
         return value   
     
-def clampDown(value, floor):
+def clamp_down(value, floor):
     """Clamp value by down limit.
     `value`: var - value to clamp
     `floor`: var - lower limit."""    
@@ -60,7 +60,7 @@ def clampDown(value, floor):
     else:
         return value
     
-def binFull(number: int) -> str:
+def bin8(number: int) -> str:
     """Get full 8-length binary representation of given nubmer."""
     return "0b%08d" % int(bin(number)[2:])
 
@@ -75,7 +75,7 @@ def distance(p1: iter, p2: iter) -> float:
     else:
         raise ValueError("`p1` and `p2` must have same lenghts!")
     
-def rotatePoint(p: iter, angle: float, center: iter=[0, 0]):
+def rotate_point(p: iter, angle: float, center: iter=[0, 0]):
     """Rotate 2D point around another.
     `p` - a sequence of coordinates of point to rotate
     `angle` - angle of rotation in radians
@@ -91,26 +91,26 @@ def rotatePoint(p: iter, angle: float, center: iter=[0, 0]):
 # ==============-File functions-============== #    
 def peek(file, size: int=-1):
     """Peek next `size` characters without moving cursor. If size is -1 - peeks till the end of file."""
-    prevPos = file.tell()
+    prev_pos = file.tell()
     if (size > -1):
         data = file.read(size)
     else:
         data = file.read()
-    file.seek(prevPos)
+    file.seek(prev_pos)
     return data
 
 def peekline(file, limit: int=0) -> str:
     """Peek next characters untill next line or next `limit` characters if set."""
-    prevPos = file.tell()
+    prev_pos = file.tell()
     data = ""
     while True:
-        newChar = file.read(1)
-        if (not newChar or newChar == "\n"):
+        new_char = file.read(1)
+        if (not new_char or new_char == "\n"):
             break
-        data += newChar
+        data += new_char
         if (limit > 0 and len(data) >= limit):
             break
-    file.seek(prevPos)
+    file.seek(prev_pos)
     return data
 # ==============-File system functions-============== #
 import os

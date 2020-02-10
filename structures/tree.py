@@ -1,6 +1,6 @@
 class BinNode():
     """Binary tree node."""
-    def __init__(self, data, left: BinNode=None, right: BinNode=None, parent: BinNode=None):
+    def __init__(self, data, left=None, right=None, parent=None):
         """Create a new BinNode object.
         data - data stored in this node,
         [left] - left child of this node,
@@ -32,13 +32,13 @@ class BinNode():
         """Get parent node."""
         return self._parent
     
-    def copy(self) -> BinNode:
+    def copy(self):
         """Create and return a copy of this node."""
         return BinNode(self.data, self.left, self.right, self.parent)
     
 class BinTree():
     """Binary tree."""
-    def __init__(self, root: BinNode=None):
+    def __init__(self, root=None):
         """Create a new BinTree object.
         [root] - a BinNode which will be root of this tree."""
         if (root and not issubclass(root, BinNode)):
@@ -48,11 +48,11 @@ class BinTree():
         
     def __iter__(self):
         iterlist = []
-        current = self._getLastLeft(self.root, iterlist)
+        current = self._get_last_left(self.root, iterlist)
         yield current
         while (True):
             if (current.right):
-                current = self._getLastLeft(current.right, iterlist)
+                current = self._get_last_left(current.right, iterlist)
             elif (len(iterlist) > 0):
                 current = iterlist.pop()
             else:
@@ -68,7 +68,7 @@ class BinTree():
     def __len__(self):
         return self._size
     
-    def _getLastLeft(self, node, lst):
+    def _get_last_left(self, node, lst):
         """|INTERNAL| get last left node for this node, remembering path to it.
         Used in iterator."""
         if (not node):
@@ -79,15 +79,15 @@ class BinTree():
             current = current.left
         return current
         
-    def _countDepth(self, node):
+    def _count_depth(self, node):
         """|INTERNAL| recursevly counts depth
         node - node to count from."""
         if (not node):
             depth = -1
         else:
-            depthLeft = self._countDepth(node.left)
-            depthRight = self._countDepth(node.right)
-            depth = 1 + (max(depthLeft, depthRight))
+            depth_left = self._count_depth(node.left)
+            depth_right = self._count_depth(node.right)
+            depth = 1 + (max(depth_left, depth_right))
         return depth      
         
     @property
@@ -101,7 +101,7 @@ class BinTree():
         return self._size
     
     @staticmethod
-    def createTree(values: iter) -> BinTree:
+    def create_tree(values: iter):
         """Create and return a new tree from given values.
         `values` must be iterable."""
         tree = BinTree()
@@ -115,11 +115,11 @@ class BinTree():
             tree.insert(v)
         return tree    
     
-    def isEmpty(self) -> bool: 
+    def is_empty(self) -> bool: 
         """Whether this tree empty or not."""
         return self._size == 0
     
-    def find(self, key) -> BinNode:
+    def find(self, key):
         """Find a node with given key in this tree. Returns None if node is not found."""
         curr = self.root
         while (curr):
@@ -134,19 +134,19 @@ class BinTree():
     def insert(self, value):
         """Create a new node with given value and insert it in this tree."""
         curr = self.root
-        newNode = BinNode(value)
+        new_node = BinNode(value)
         while (curr):
-            newNode._parent = curr
+            new_node._parent = curr
             if (value < curr.data):
                 curr = curr.left
             else:
                 curr = curr.right  
-        if (not newNode.parent):
-            self._root = newNode
-        elif (value < newNode.parent.data):
-            newNode.parent._left = newNode
+        if (not new_node.parent):
+            self._root = new_node
+        elif (value < new_node.parent.data):
+            new_node.parent._left = new_node
         else:
-            newNode.parent._right = newNode
+            new_node.parent._right = new_node
         self._size += 1
         
     def remove(self, key):
@@ -190,4 +190,4 @@ class BinTree():
         
     def depth(self) -> int:
         """Get depth of this tree."""
-        return self._countDepth(self._root)
+        return self._count_depth(self._root)

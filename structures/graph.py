@@ -63,9 +63,9 @@ class Graph():
         idx = self.find(vertex)
         if (idx != -1):
             self._vertices.pop(idx)
-            self._edges.removeRow(idx)
+            self._edges.remove_row(idx)
             try:
-                self._edges.removeColumn(idx)
+                self._edges.remove_column(idx)
             except RuntimeError:
                 pass
         else:

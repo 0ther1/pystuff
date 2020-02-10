@@ -7,13 +7,13 @@ class Plot():
         [name] - name of this plot
         [color] - color of this plot lines and points
         [points] - points of this plot in format [(x, y), ...]
-        [showpoints] - draw points or not
-        [showlines] - draw lines or not"""
+        [show_points] - draw points or not
+        [show_lines] - draw lines or not"""
         self.name = name
         self.color = color
         self._points = points
-        self.showpoints = showpoints
-        self.showlines = showlines
+        self.show_points = showpoints
+        self.show_lines = showlines
     
     @property
     def points(self):
@@ -33,7 +33,7 @@ class Plot():
         else:
             raise TypeError("Points must be a list or a tuple!")
         
-    def addPoint(self, point):
+    def add_point(self, point):
         """Add a new point to plot. 'point' must be list or tuple with two coordinates."""
         if (isinstance(point, list) or isinstance(point, tuple)):
             if (len(point) != 2):
@@ -64,34 +64,34 @@ class PlotDrawer(Frame):
             H = kw["height"]                # set given height
         self._plots = plots                 # [INTERNAL] plot list
         self._scale = scale                 # [INTERNAL] grid and plot scale
-        self._gridColor = gridcolor         # [INTERNAL] grid color
-        self._centerColor = centercolor     # [INTERNAL] grid center color
-        self._canvasW = W                   # [INTERNAL] width of canvas
-        self._canvasH = H                   # [INTERNAL] height of canvas
-        self._drawAxis = False              # [INTERNAL] visibility of axis NOT USED
+        self._grid_color = gridcolor        # [INTERNAL] grid color
+        self._center_color = centercolor    # [INTERNAL] grid center color
+        self._canvas_w = W                  # [INTERNAL] width of canvas
+        self._canvas_h = H                  # [INTERNAL] height of canvas
+        self._draw_axis = False             # [INTERNAL] visibility of axis NOT USED
         self._center = [0, 0]               # [INTERNAL] center of plot (in plot axis) (x,y)
-        self._screenCenter = [W/2, H/2]     # [INTERNAL] center of plot (in screen axis) (x,y)
+        self._screen_center = [W/2, H/2]    # [INTERNAL] center of plot (in screen axis) (x,y)
         self._steps = [0, 0]                # [INTERNAL] step of axis (x,y) NOT USED
-        self._userScaled = False            # [INTERNAL] set if user changed scale
-        self._lastMousePos = []             # [INTERNAl] last mouse position
+        self._user_scaled = False           # [INTERNAL] set if user changed scale
+        self._last_mouse_pos = []           # [INTERNAl] last mouse position
         # Setup canvas
         bgcolor = "white"                   # background color of canvas
         if ("bg" in kw.keys()):             # if background color is given in kw
             bgcolor = kw["bg"]              # set given color
-        self._canvas = Canvas(self, width=self._canvasW, height=self._canvasH, bg=bgcolor, highlightthickness=0)    # canvas for drawing
+        self._canvas = Canvas(self, width=self._canvas_w, height=self._canvas_h, bg=bgcolor, highlightthickness=0)    # canvas for drawing
         self._canvas.grid(column=0, row=0, columnspan=20)       # place canvas 
-        self._canvas.bind("<Motion>", self._showCooridnates)    # bind on mouse movement for canvas 
-        self._canvas.bind("<B1-Motion>", self._moveGrid)        # bind on mouse drag for canvas
-        self._canvas.bind("<MouseWheel>", self._changeScale)    # bind on mouse wheel for canvas
-        self._canvas.bind("<Leave>", self._eraseCoordinates)    # bind on mouse leave for canvas
-        self._canvas.bind("<Button-1>", lambda e: self._lastMousePos.extend([e.x, e.y]))
-        self._canvas.bind("<ButtonRelease-1>", lambda e: self._lastMousePos.clear())    # bind on mouse button 1 release - clear last mousce position
-        self._infoLabel = Label(self, text="X: --.------ ; Y: --.------")   # label for displaying coordinates
-        self._infoLabel.grid(column=0, row=1)                   # place label
-        self._scaleLabel = Label(self, text="Scale: %1.1f" % self.scale)    # label for displaying current scale
-        self._scaleLabel.grid(column=19, row=1)
-        self._drawGrid()                                        # begin drawing grid
-        self._drawPoints()                                      # begin drawing points
+        self._canvas.bind("<Motion>", self._show_cooridnates)    # bind on mouse movement for canvas 
+        self._canvas.bind("<B1-Motion>", self._move_grid)        # bind on mouse drag for canvas
+        self._canvas.bind("<MouseWheel>", self._change_scale)    # bind on mouse wheel for canvas
+        self._canvas.bind("<Leave>", self._erase_coordinates)    # bind on mouse leave for canvas
+        self._canvas.bind("<Button-1>", lambda e: self._last_mouse_pos.extend([e.x, e.y]))
+        self._canvas.bind("<ButtonRelease-1>", lambda e: self._last_mouse_pos.clear())    # bind on mouse button 1 release - clear last mousce position
+        self._info_label = Label(self, text="X: --.------ ; Y: --.------")   # label for displaying coordinates
+        self._info_label.grid(column=0, row=1)                   # place label
+        self._scale_label = Label(self, text="Scale: %1.1f" % self.scale)    # label for displaying current scale
+        self._scale_label.grid(column=19, row=1)
+        self._draw_grid()                                        # begin drawing grid
+        self._draw_points()                                      # begin drawing points
         
     @property
     def scale(self):
@@ -122,160 +122,160 @@ class PlotDrawer(Frame):
         else:
             raise TypeError("Plots must be a list or a tuple!")
         
-    def _changeScale(self, event):
+    def _change_scale(self, event):
         """[INTERNAL] handler for mouse wheel scaling."""
-        if (not self._userScaled):
-            self._userScaled = True
+        if (not self._user_scaled):
+            self._user_scaled = True
         try:
             self.scale += 0.5 if event.delta < 0 else -0.5  # try to change scale
         except ValueError:                                  # except invalid values 
             pass
         
-    def _moveGrid(self, event):
+    def _move_grid(self, event):
         """[INTERNAL] handler for mouse canvas movement."""
-        self._screenCenter[0] -= self._lastMousePos[0] - event.x
-        self._screenCenter[1] -= self._lastMousePos[1] - event.y
-        self._lastMousePos = [event.x, event.y]
+        self._screen_center[0] -= self._last_mouse_pos[0] - event.x
+        self._screen_center[1] -= self._last_mouse_pos[1] - event.y
+        self._last_mouse_pos = [event.x, event.y]
         self.update()
         
-    def _showCooridnates(self, event):
+    def _show_cooridnates(self, event):
         """[INTERNAL] handler for displaying coordinates under pointer."""
-        co = self._fromScreenCoordinates([event.x, event.y])                # convert pointer coordinates to plot axis
+        co = self._from_screen_coordinates([event.x, event.y])                # convert pointer coordinates to plot axis
         for plot in self._plots:                                            # for every plot
             for p in plot.points:                                           # for every point
                 if (abs(p[0] - co[0]) < 0.1 and abs(p[1] - co[1]) < 0.1):   # if pointer is near point
                     co = p                                                  # snap to this point
                     break
-        self._infoLabel["text"] = "X: %.06f ; Y: %.06f" % (co[0], co[1])# display coordinates
+        self._info_label["text"] = "X: %.06f ; Y: %.06f" % (co[0], co[1])# display coordinates
         
-    def _eraseCoordinates(self, event):
+    def _erase_coordinates(self, event):
         """[INTERNAL] handler for displaying defalut value when coordinates cannot be received."""
-        self._infoLabel["text"] = "X: --.------ ; Y: --.------"
+        self._info_label["text"] = "X: --.------ ; Y: --.------"
 
-    def _fromScreenCoordinates(self, point):
+    def _from_screen_coordinates(self, point):
         """[INTERNAL] convert coordinates from screen to plot axis."""
-        gridCountH = (self.HORIZONTALS*self._scale)     # count of horizontals
-        gridCountV = (self.VERTICALS*self._scale)       # count of vertical
-        gridWidth = self._canvasW / gridCountH          # width of one cell in grid
-        gridHeight = self._canvasH / gridCountV         # height of one cell in grid
-        screenCenter = [self._screenCenter[0] - self._center[0]*gridWidth, self._screenCenter[1] + self._center[1]*gridHeight]  # center of plot in screen coordinates
-        return [(point[0] - screenCenter[0]) / gridWidth, -(point[1] - screenCenter[1]) / gridHeight]   # return converted coordinates
+        grid_count_h = (self.HORIZONTALS*self._scale)     # count of horizontals
+        grid_count_v = (self.VERTICALS*self._scale)       # count of vertical
+        grid_width = self._canvas_w / grid_count_h          # width of one cell in grid
+        grid_height = self._canvas_h / grid_count_v         # height of one cell in grid
+        screen_center = [self._screen_center[0] - self._center[0]*grid_width, self._screen_center[1] + self._center[1]*grid_height]  # center of plot in screen coordinates
+        return [(point[0] - screen_center[0]) / grid_width, -(point[1] - screen_center[1]) / grid_height]   # return converted coordinates
         
-    def _toScreenCoordinates(self, point):
+    def _to_screen_coordinates(self, point):
         """[INTERNAL] convert coordinates from plot to screen axis."""
-        gridCountH = (self.HORIZONTALS*self._scale)     # count of horizontals
-        gridCountV = (self.VERTICALS*self._scale)       # count of vertical
-        gridWidth = self._canvasW / gridCountH          # width of one cell in grid
-        gridHeight = self._canvasH / gridCountV         # height of one cell in grid
-        screenCenter = [self._screenCenter[0] - self._center[0]*gridWidth, self._screenCenter[1] + self._center[1]*gridHeight] # center of plot in screen coordinates
-        return [point[0]*gridWidth + screenCenter[0], screenCenter[1] - point[1]*gridHeight]    # return converted coordinates
+        grid_count_h = (self.HORIZONTALS*self._scale)     # count of horizontals
+        grid_count_v = (self.VERTICALS*self._scale)       # count of vertical
+        grid_width = self._canvas_w / grid_count_h          # width of one cell in grid
+        grid_height = self._canvas_h / grid_count_v         # height of one cell in grid
+        screen_center = [self._screen_center[0] - self._center[0]*grid_width, self._screen_center[1] + self._center[1]*grid_height] # center of plot in screen coordinates
+        return [point[0]*grid_width + screen_center[0], screen_center[1] - point[1]*grid_height]    # return converted coordinates
         
-    def _setupGrid(self):
+    def _setup_grid(self):
         """[INTERNAL] prepare grid attributes."""
         X = []      # all x coordinates of all points
         Y = []      # all y coordinates of all points
-        absX = []   # all absolute x coordinates of all points
-        absY = []   # all absolute y coordinates of all points
-        pointCount = 0                      # count of all points
+        abs_x = []   # all absolute x coordinates of all points
+        abs_y = []   # all absolute y coordinates of all points
+        point_count = 0                      # count of all points
         for plot in self._plots:            # for every plot
-            pointCount += len(plot.points)
+            point_count += len(plot.points)
             for p in plot.points:           # for every point
                 X.append(p[0])              # add x coordinate
                 Y.append(p[1])              # add y coordinate
-                absX.append(abs(p[0]))      # add absolute x coordinate
-                absY.append(abs(p[1]))      # add absolute y coordinate
-        if (pointCount > 0):
-            self._center = [sum(X)/pointCount, sum(Y)/pointCount]   # calculate center of plot
-            self._steps = [sum(absX) / self.HORIZONTALS, sum(absY) / self.VERTICALS]    # calculate step of grid
+                abs_x.append(abs(p[0]))      # add absolute x coordinate
+                abs_y.append(abs(p[1]))      # add absolute y coordinate
+        if (point_count > 0):
+            self._center = [sum(X)/point_count, sum(Y)/point_count]   # calculate center of plot
+            self._steps = [sum(abs_x) / self.HORIZONTALS, sum(abs_y) / self.VERTICALS]    # calculate step of grid
         
-    def _drawGrid(self):
+    def _draw_grid(self):
         """[INTERNAL] draw grid on canvas."""
-        self._setupGrid()                           # prepare grid attributes
+        self._setup_grid()                           # prepare grid attributes
         self._canvas.delete(ALL)                    # clear canvas
         multiplier = (self._scale - 10*(self.scale//10))
         if (multiplier < 1):
             multiplier = 1
-        gridCountH = int(self.HORIZONTALS*multiplier) # count of horizontals 
-        gridCountV = int(self.VERTICALS*multiplier)   # count of verticals        
-        gridWidth = self._canvasW / gridCountH      # width of one cell in grid
-        gridHeight = self._canvasH / gridCountV     # height of one cell in grid
-        cntr = self._toScreenCoordinates([0, 0])    # get center (0, 0) in screen coordinates
-        lineY = cntr[1]
+        grid_count_h = int(self.HORIZONTALS*multiplier) # count of horizontals 
+        grid_count_v = int(self.VERTICALS*multiplier)   # count of verticals        
+        grid_width = self._canvas_w / grid_count_h      # width of one cell in grid
+        grid_height = self._canvas_h / grid_count_v     # height of one cell in grid
+        cntr = self._to_screen_coordinates([0, 0])    # get center (0, 0) in screen coordinates
+        line_y = cntr[1]
         sign = 1
         while (True):
             if (sign == 1):
-                if (lineY > self._canvasH):
+                if (line_y > self._canvas_h):
                     break
             else:
-                if (lineY < 0):
+                if (line_y < 0):
                     break
-            lineY += gridHeight * sign
-            if (0 <= lineY <= self._canvasH):
-                self._canvas.create_line(0, lineY, self._canvasW, lineY, fill=self._gridColor)
-        lineY = cntr[1]
+            line_y += grid_height * sign
+            if (0 <= line_y <= self._canvas_h):
+                self._canvas.create_line(0, line_y, self._canvas_w, line_y, fill=self._grid_color)
+        line_y = cntr[1]
         sign = -1
         while (True):
             if (sign == 1):
-                if (lineY > self._canvasH):
+                if (line_y > self._canvas_h):
                     break
             else:
-                if (lineY < 0):
+                if (line_y < 0):
                     break
-            lineY += gridHeight * sign
-            if (0 <= lineY <= self._canvasH):
-                self._canvas.create_line(0, lineY, self._canvasW, lineY, fill=self._gridColor)  
-        lineX = cntr[0]
+            line_y += grid_height * sign
+            if (0 <= line_y <= self._canvas_h):
+                self._canvas.create_line(0, line_y, self._canvas_w, line_y, fill=self._grid_color)  
+        line_x = cntr[0]
         sign = 1
         while (True):
             if (sign == 1):
-                if (lineX > self._canvasW):
+                if (line_x > self._canvas_w):
                     break
             else:
-                if (lineX < 0):
+                if (line_x < 0):
                     break
-            lineX += gridWidth * sign
-            if (0 <= lineX <= self._canvasW):
-                self._canvas.create_line(lineX, 0, lineX, self._canvasW, fill=self._gridColor)
-        lineX = cntr[0]
+            line_x += grid_width * sign
+            if (0 <= line_x <= self._canvas_w):
+                self._canvas.create_line(line_x, 0, line_x, self._canvas_w, fill=self._grid_color)
+        line_x = cntr[0]
         sign = -1
         while (True):
             if (sign == 1):
-                if (lineX > self._canvasW):
+                if (line_x > self._canvas_w):
                     break
             else:
-                if (lineX < 0):
+                if (line_x < 0):
                     break
-            lineX += gridWidth * sign
-            if (0 <= lineX <= self._canvasW):
-                self._canvas.create_line(lineX, 0, lineX, self._canvasW, fill=self._gridColor)          
-        if (0 <= cntr[0] <= self._canvasW):         # if x of center is within screen space - draw it
-            self._canvas.create_line(cntr[0], 0, cntr[0], self._canvasH, fill=self._centerColor, width=2)
-        if (0 <= cntr[1] <= self._canvasH):         # if y of center is within screen space - draw it
-            self._canvas.create_line(0, cntr[1],self._canvasW, cntr[1], fill=self._centerColor, width=2)  
+            line_x += grid_width * sign
+            if (0 <= line_x <= self._canvas_w):
+                self._canvas.create_line(line_x, 0, line_x, self._canvas_w, fill=self._grid_color)          
+        if (0 <= cntr[0] <= self._canvas_w):         # if x of center is within screen space - draw it
+            self._canvas.create_line(cntr[0], 0, cntr[0], self._canvas_h, fill=self._center_color, width=2)
+        if (0 <= cntr[1] <= self._canvas_h):         # if y of center is within screen space - draw it
+            self._canvas.create_line(0, cntr[1],self._canvas_w, cntr[1], fill=self._center_color, width=2)  
             
-    def _drawPoints(self):
+    def _draw_points(self):
         """[INTERNAL] draw all points of plot."""
-        pointSize = 4/((self.scale//10)+1)
+        point_size = 4/((self.scale//10)+1)
         for plot in self._plots:
-            lastPoint = None                        # previous point
+            last_point = None                        # previous point
             for p in plot.points:                   # for every point
-                xy = self._toScreenCoordinates(p)   # convert point coordinates to screen space
-                if (not self._userScaled):
-                    if (0 > xy[0] or xy[0] > self._canvasW or 0 > xy[1] or xy[1] > self._canvasH):  # if point outside screen space
+                xy = self._to_screen_coordinates(p)   # convert point coordinates to screen space
+                if (not self._user_scaled):
+                    if (0 > xy[0] or xy[0] > self._canvas_w or 0 > xy[1] or xy[1] > self._canvas_h):  # if point outside screen space
                         try:
                             self.scale += 0.1           # try to increase scale
                         except ValueError:              # excepting maximum scale
                             pass
                         break
                 if (plot.showpoints):
-                    self._canvas.create_oval(xy[0]-pointSize//2, xy[1]-pointSize//2, xy[0]+pointSize//2, xy[1]+pointSize//2, fill=plot.color, outline=plot.color) # draw point
-                if (lastPoint):                     # if this is not first point of plot
-                    xy2 = self._toScreenCoordinates(lastPoint)              # convert previous point coordinates to screen space
+                    self._canvas.create_oval(xy[0]-point_size//2, xy[1]-point_size//2, xy[0]+point_size//2, xy[1]+point_size//2, fill=plot.color, outline=plot.color) # draw point
+                if (last_point):                     # if this is not first point of plot
+                    xy2 = self._to_screen_coordinates(last_point)              # convert previous point coordinates to screen space
                     if (plot.showlines):
                         self._canvas.create_line(xy[0], xy[1], xy2[0], xy2[1], fill=plot.color, width=1*((self.scale//10)+1))  # draw line between previous and current points
-                lastPoint = p                       # set current point as prevoius            
+                last_point = p                       # set current point as prevoius            
             
-    def addPlot(self, plot):
+    def add_plot(self, plot):
         """Add a new plot to draw. 'plot' - a Plot object"""
         if (isinstance(plot, Plot)):    # if it's a Plot
             self._plots.append(plot)    # add it
@@ -283,7 +283,7 @@ class PlotDrawer(Frame):
         else:
             raise TypeError("'plot' must be a Plot object!")
         
-    def addPointToPlot(self, plotname, point):
+    def add_point_to_plot(self, plotname, point):
         """Add new point to plot with name 'plotname'."""
         plot = None
         for plt in self._plots:
@@ -291,19 +291,14 @@ class PlotDrawer(Frame):
                 plot = plt
                 break
         if (plot):
-            plot.addPoint(point)
+            plot.add_point(point)
             self.update()
         else:
             raise ValueError("Plot with name '%s' is not in plot list of this plot drawer!" % plotname)
             
     def update(self):
         """Update this widget. Along with regular tkinter update, redraws grid and plot."""
-        self._drawGrid()    # redraw grid
-        self._drawPoints()  # redraw points
-        self._scaleLabel["text"] = "Scale: %1.1f" % self.scale
+        self._draw_grid()    # redraw grid
+        self._draw_points()  # redraw points
+        self._scale_label["text"] = "Scale: %1.1f" % self.scale
         super().update()    # tkinter's update
-        
-root = Tk()
-pd = PlotDrawer(root)
-pd.pack()
-root.mainloop()

@@ -41,7 +41,7 @@ class Matrix():
             self.resize(columns=int(value))
             
     @staticmethod
-    def identity(size: int) -> Matrix:
+    def identity(size: int):
         """Create and return a new identity Matrix of given size (all elements are 0.0 except main diagonal - they are 1.0)."""
         out = Matrix(size, size)
         for i in range(size):
@@ -49,7 +49,7 @@ class Matrix():
         return out
     
     @staticmethod
-    def minor(mat: Matrix, i: int, j: int) -> Matrix:
+    def minor(mat, i: int, j: int):
         """Get minor of given matrix (given matrix without `i`-th row and `j`-th column)."""
         if ((i >= mat.rows or i < 0) or (j >= mat.columns or j < 0)):
             raise IndexError
@@ -66,7 +66,7 @@ class Matrix():
         return m
     
     @staticmethod
-    def determinant(mat: Matrix) -> float:
+    def determinant(mat) -> float:
         """Get determinant of given matrix."""
         if (mat.columns != mat.rows):
             raise WrongDimensionsException("Matrix must be square to find determinant!")
@@ -84,13 +84,13 @@ class Matrix():
             return d
                     
     @staticmethod
-    def gauss(mat: Matrix, vec: iter) -> list:
+    def gauss(mat, vec: iter) -> list:
         """Solve a system of linear equations with Gauss method. Requires matrix and a vector. Returns vector of results."""
         if (len(vec) != mat.rows):
             raise ValueError("Vector must have same length as matrix row count to perform this operation!")
         m = mat.copy()
-        m.insertColumn(vec, m.columns)
-        m.toLowerTriangle()
+        m.insert_column(vec, m.columns)
+        m.to_lower_triangle()
         result = [0.0 for i in range(len(vec))]
         for i in range(m.rows - 1, -1, -1):
             summ = 0.0
@@ -100,16 +100,16 @@ class Matrix():
         return result    
         
     @staticmethod
-    def _columnMax(mat: Matrix, col: int) -> float:
+    def _column_max(mat, col: int) -> float:
         """[INTERNAL] get maximum element in given column of given matrix."""
         mx = abs(mat[col][col])
-        maxIdx = col
+        max_idx = col
         for i in range(col + 1, mat.rows):
             e = abs(mat[i][col])
             if (e > mx):
                 mx = e
-                maxIdx = i
-        return maxIdx
+                max_idx = i
+        return max_idx
         
     def __getitem__(self, key):
         """Get row at `key` pos."""
@@ -129,17 +129,17 @@ class Matrix():
     def __str__(self):
         """String representaion of this matrix."""
         out = "Matrix("
-        maxLen = 0
+        max_len = 0
         negs = False
         for row in self._mat:
             for e in row:
-                if (len(str(int(e))) > maxLen):
-                    maxLen = len(str(abs(int(e))))
+                if (len(str(int(e))) > max_len):
+                    max_len = len(str(abs(int(e))))
                 if (not negs and e < 0):
                     negs = True
         for i, row in enumerate(self._mat):
             for j, e in enumerate(row):
-                out += ("%" + str(maxLen + 3 + (1 if e >= 0.0 and negs else 0)) + ".2f") % e
+                out += ("%" + str(max_len + 3 + (1 if e >= 0.0 and negs else 0)) + ".2f") % e
                 if (j != len(row) - 1):
                     out += " "
             if (i != len(self._mat) - 1):
@@ -280,7 +280,7 @@ class Matrix():
         elif (columns == 0):
             self.clear()
             
-    def copy(self) -> Matrix:
+    def copy(self):
         """Return a copy of this matrix."""
         m = Matrix(self._rows, self._columns)
         m._mat = self._mat.copy()
@@ -296,7 +296,7 @@ class Matrix():
         self._rows = m.rows
         self._mat = m._mat.copy()
             
-    def transposed(self) -> Matrix:
+    def transposed(self):
         """Get transposed version of this matrix."""
         m = self.copy()
         m.transpose()
@@ -304,7 +304,7 @@ class Matrix():
     
     def inverse(self):
         """Inverse this matrix."""
-        d = self.getDeterminant()
+        d = self.get_determinant()
         if (d == 0):
             raise ZeroDeterminantException()
         t = self.transposed()
@@ -312,47 +312,47 @@ class Matrix():
         for i in range(out._rows):
             for j in range(out._columns):
                 m = Matrix.minor(t, i, j)
-                out[i][j] = 1/d * (-1) ** (i + j) * m.getDeterminant()
+                out[i][j] = 1/d * (-1) ** (i + j) * m.get_determinant()
         return out
     
-    def inversed(self) -> Matrix:
+    def inversed(self):
         """Get inversed version of this matrix."""
         m = self.copy()
         m.inverse()
         return m
     
-    def toLowerTriangle(self):
+    def to_lower_triangle(self):
         """Turn given matrix into lower triangle state (elements below main diagonal are 0.0)."""
         for i in range(self.rows - 1):
-            maxIdx = Matrix._columnMax(self, i)
-            if (i != maxIdx):
-                self.swapRows(i, maxIdx)
+            max_idx = Matrix._column_max(self, i)
+            if (i != max_idx):
+                self.swap_rows(i, max_idx)
             for j in range(i + 1, self.rows):
                 mul = -self[j][i] / self[i][i]
                 for k in range(i, self.columns):
                     self[j][k] += self[i][k] * mul    
     
-    def getDeterminant(self) -> float:
+    def get_determinant(self) -> float:
         """Get determinant of this matrix (only for square matrix)."""
         return Matrix.determinant(self)
     
-    def swapRows(self, i1: int, i2: int):
+    def swap_rows(self, i1: int, i2: int):
         """Swap `i1`-th row and `i2`-th."""
         self._mat[i1], self._mat[i2] = self._mat[i2], self._mat[i1]
         
-    def swapColumns(self, j1: int, j2: int):
+    def swap_columns(self, j1: int, j2: int):
         """Swap `j1`-th column and `j2`-th."""
         for row in self._mat:
             row[j1], row[j2] = row[j2], row[j1]
             
-    def insertRow(self, vec: iter, i: int):
+    def insert_row(self, vec: iter, i: int):
         """Insert `vec` before `i`-th row."""
         if (len(vec) != self.columns):
             raise ValueError("`vec` must have length equal matrix column count!")
         self._mat.insert(i, list(vec))
         self._rows += 1
         
-    def insertColumn(self, vec: iter, j: int):
+    def insert_column(self, vec: iter, j: int):
         """Insert `vec` before `j`-th column."""
         if (len(vec) != self.rows):
             raise ValueError("`vec` must have length equal matrix row count!")        
@@ -360,7 +360,7 @@ class Matrix():
             row.insert(j, vec[i])
         self._columns += 1
         
-    def removeRow(self, i: int):
+    def remove_row(self, i: int):
         """Remove `i`-th row. Raises IndexError if given invalid index. Raises RuntimeError if matrix is empty."""
         if (self.rows > 0):
             try:
@@ -373,7 +373,7 @@ class Matrix():
         else:
             raise RuntimeError("Matrix is empty!")
         
-    def removeColumn(self, j: int):
+    def remove_column(self, j: int):
         """Remove `j`-th column. Raises IndexError if given invalid index. Raises RuntimeError if matrix is empty."""
         if (self.columns > 0):
             try:
@@ -390,7 +390,7 @@ class Matrix():
     def rang(self) -> int:
         """Get rang of this matrix."""
         m = self.copy()
-        Matrix.toLowerTriangle(m)
+        Matrix.to_lower_triangle(m)
         rang = min(m.rows, m.columns)
         for row in m._mat:
             for e in row:

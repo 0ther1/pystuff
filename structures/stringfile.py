@@ -9,7 +9,7 @@ class StringFile():
         self._data = ""
         self.filepath = None
         self._eof = True
-        self._currentPosition = 0 
+        self._current_position = 0 
         if (filepath):
             with open(filepath, "r") as f:
                 self._data = f.read()
@@ -43,8 +43,8 @@ class StringFile():
             offset = len(data)
         elif (rewrite > 0):
             offset = rewrite
-        self._data = self._data[:self._currentPosition] + data + self._data[self._currentPosition + offset:]
-        self._currentPosition += len(data)
+        self._data = self._data[:self._current_position] + data + self._data[self._current_position + offset:]
+        self._current_position += len(data)
         
     def read(self, size: int=-1) -> str:
         """Get next [size] characters from data. size=-1 - returns all characters from current position to end."""
@@ -53,16 +53,16 @@ class StringFile():
         if (self._eof):  # raise EOFError if tries to read at end of file
             raise EOFError("Cannot read after end of file")
         output = ""
-        if (self._currentPosition + size > len(self._data)):         # if tries to read more than left
-            size = len(self._data) - 1 - self._currentPosition   # cut [size] to remaining count
+        if (self._current_position + size > len(self._data)):         # if tries to read more than left
+            size = len(self._data) - 1 - self._current_position   # cut [size] to remaining count
         if (size == -1):                                # if size == -1            
-            output = self._data[self._currentPosition:]   # read from current position to end of file
-            self._currentPosition = len(self._data)       # set current position at end of file
+            output = self._data[self._current_position:]   # read from current position to end of file
+            self._current_position = len(self._data)       # set current position at end of file
         else:
-            output = self._data[self._currentPosition:self._currentPosition+size]  # else read given size
-            self._currentPosition += size                                        # move current position
+            output = self._data[self._current_position:self._current_position+size]  # else read given size
+            self._current_position += size                                        # move current position
         
-        if (self._currentPosition >= len(self._data) - 1):    # if we at end of file
+        if (self._current_position >= len(self._data) - 1):    # if we at end of file
             self._eof = True                             # set end of file as True
         return output   # return read data
         
@@ -71,23 +71,23 @@ class StringFile():
         if (position < -1 or position > len(self._data)): 
             raise ValueError("Position to seek is beyond file size")    # raise ValueError if position is out of bounds
         if (position == -1):
-            self._currentPosition = len(self._data) # set current position in end of file
+            self._current_position = len(self._data) # set current position in end of file
         else:
-            self._currentPosition = position        # set current position in [position]
+            self._current_position = position        # set current position in [position]
         if (position != len(self._data)):    # if position not at end of file    
             self._eof = False                # set end of file as False
         
     def tell(self) -> int:
         """Get current position."""
-        return self._currentPosition
+        return self._current_position
         
     def peek(self, size: int=-1) -> str:
         """Get next [size] characters from data, but do not move current position. size=-1 - returns all characters from current position to end."""
-        oldEof = self._eof               # save state
-        oldPos = self._currentPosition
+        old_eof = self._eof               # save state
+        old_pos = self._current_position
         output = self.read(size)        # read data
-        self._eof = oldEof               # restore state
-        self._currentPosition = oldPos
+        self._eof = old_eof               # restore state
+        self._current_position = old_pos
         return output
         
     def find(self, substr: str, start: int=-1, seek: bool=False) -> int:
@@ -96,11 +96,11 @@ class StringFile():
         If [seek] current position will be moved after 'substr' if it's present."""
         output = 0
         if (start == -1):
-            output = self._data.find(substr, self._currentPosition)
+            output = self._data.find(substr, self._current_position)
         else:
             output = self._data.find(substr, start)
         if (seek and output != -1):
-            self._currentPosition = output + len(substr)
+            self._current_position = output + len(substr)
         return output
         
     def save(self):
@@ -121,7 +121,7 @@ class StringBinaryFile(StringFile):
         self._data = b""
         self.filepath = None
         self._eof = True
-        self._currentPosition = 0        
+        self._current_position = 0        
         if (filepath):
             with open(filepath, "rb") as f:  
                 self._data = f.read()
@@ -152,16 +152,16 @@ class StringBinaryFile(StringFile):
             offset = calcsize(frmt)
         elif (rewrite > 0):
             offset = rewrite
-        self._data = self._data[:self._currentPosition] + pack(frmt, data) + self._data[self._currentPosition+offset:]
-        self._currentPosition += calcsize(frmt)
+        self._data = self._data[:self._current_position] + pack(frmt, data) + self._data[self._current_position+offset:]
+        self._current_position += calcsize(frmt)
     
     def read(self, format: str):
         """Get unpacked data from given format."""
-        expectedSize = calcsize(format)       
-        if (expectedSize == 0):
+        expected_size = calcsize(format)       
+        if (expected_size == 0):
             return b""
-        rawdata = super().read(expectedSize)    
-        if (len(rawdata) < expectedSize):       
+        rawdata = super().read(expected_size)    
+        if (len(rawdata) < expected_size):       
             raise RuntimeError("Length of read bytes is lesser than expected!")
         output = unpack(format, rawdata)[0]     
         return output
@@ -169,17 +169,17 @@ class StringBinaryFile(StringFile):
     def peek(self, format: str):
         """Get unpacked data from given format, but do not move current position."""
         oldEof = self._eof              
-        oldPos = self._currentPosition
+        oldPos = self._current_position
         output = self.read(format)       
         self._eof = oldEof               
-        self._currentPosition = oldPos        
+        self._current_position = oldPos        
         return output
         
     def find(self, substr: bytes, start: int=-1, seek: bool=False) -> int:
         """Get position of [substr] in file. Returns -1 if not found. 
         Start searching from [start], -1 - from current position.
         If [seek] current position will be moved after 'substr' if it's present."""
-        pos = self._data.find(substr, start if start != -1 else self._currentPosition)
+        pos = self._data.find(substr, start if start != -1 else self._current_position)
         if (pos != -1 and seek):
             self.seek(pos + len(substr))
         return pos
