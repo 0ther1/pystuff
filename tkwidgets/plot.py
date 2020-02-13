@@ -74,6 +74,7 @@ class PlotDrawer(Frame):
         self._steps = [0, 0]                # [INTERNAL] step of axis (x,y) NOT USED
         self._user_scaled = False           # [INTERNAL] set if user changed scale
         self._last_mouse_pos = []           # [INTERNAl] last mouse position
+        self._plot_labels = []              # [INTERNAl] plot names and colors
         # Setup canvas
         bgcolor = "white"                   # background color of canvas
         if ("bg" in kw.keys()):             # if background color is given in kw
@@ -87,11 +88,14 @@ class PlotDrawer(Frame):
         self._canvas.bind("<Button-1>", lambda e: self._last_mouse_pos.extend([e.x, e.y]))
         self._canvas.bind("<ButtonRelease-1>", lambda e: self._last_mouse_pos.clear())    # bind on mouse button 1 release - clear last mousce position
         self._info_label = Label(self, text="X: --.------ ; Y: --.------")   # label for displaying coordinates
-        self._info_label.grid(column=0, row=1)                   # place label
+        self._info_label.grid(column=0, row=2)                   # place label
         self._scale_label = Label(self, text="Scale: %1.1f" % self.scale)    # label for displaying current scale
-        self._scale_label.grid(column=19, row=1)
+        self._scale_label.grid(column=19, row=2)
+        self._frm_plot_labels = Frame(self)                         # frame for plot name labels
+        self._frm_plot_labels.grid(row=1, column=0, columnspan=20)
         self._draw_grid()                                        # begin drawing grid
         self._draw_points()                                      # begin drawing points
+        self._update_plot_labels()
         
     @property
     def scale(self):
@@ -146,7 +150,15 @@ class PlotDrawer(Frame):
                 if (abs(p[0] - co[0]) < 0.1 and abs(p[1] - co[1]) < 0.1):   # if pointer is near point
                     co = p                                                  # snap to this point
                     break
-        self._info_label["text"] = "X: %.06f ; Y: %.06f" % (co[0], co[1])# display coordinates
+        self._info_label["text"] = "X: %.06f ; Y: %.06f" % (co[0], co[1])   # display coordinates
+        
+    def _update_plot_labels(self):
+        """[INTERNAL] update labels with plot names."""
+        for lbl in self._frm_plot_labels.children:
+            lbl.destroy()
+        for plt in self._plots:
+            lbl = Label(self._frm_plot_labels, text="——— %s" % plt.name, fg=plt.color)
+            lbl.pack()
         
     def _erase_coordinates(self, event):
         """[INTERNAL] handler for displaying defalut value when coordinates cannot be received."""
@@ -267,11 +279,11 @@ class PlotDrawer(Frame):
                         except ValueError:              # excepting maximum scale
                             pass
                         break
-                if (plot.showpoints):
+                if (plot.show_points):
                     self._canvas.create_oval(xy[0]-point_size//2, xy[1]-point_size//2, xy[0]+point_size//2, xy[1]+point_size//2, fill=plot.color, outline=plot.color) # draw point
                 if (last_point):                     # if this is not first point of plot
                     xy2 = self._to_screen_coordinates(last_point)              # convert previous point coordinates to screen space
-                    if (plot.showlines):
+                    if (plot.show_lines):
                         self._canvas.create_line(xy[0], xy[1], xy2[0], xy2[1], fill=plot.color, width=1*((self.scale//10)+1))  # draw line between previous and current points
                 last_point = p                       # set current point as prevoius            
             
@@ -279,6 +291,7 @@ class PlotDrawer(Frame):
         """Add a new plot to draw. 'plot' - a Plot object"""
         if (isinstance(plot, Plot)):    # if it's a Plot
             self._plots.append(plot)    # add it
+            self._update_plot_labels()
             self.update()               # update to redraw
         else:
             raise TypeError("'plot' must be a Plot object!")
@@ -302,3 +315,4 @@ class PlotDrawer(Frame):
         self._draw_points()  # redraw points
         self._scale_label["text"] = "Scale: %1.1f" % self.scale
         super().update()    # tkinter's update
+        
