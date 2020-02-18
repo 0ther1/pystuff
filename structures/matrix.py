@@ -193,9 +193,16 @@ class Matrix():
         self._mat = (self - other)._mat
         
     def __mul__(self, other):
-        """Multiply to one matrix another matrix or number and return it."""
-        m = Matrix(self._rows, other._columns)
+        """Multiply matrix by another matrix, sequence or number."""
+        vec = False
+        if (isinstance(other, (list, tuple))):
+            vec = True
+            o = Matrix(len(other), 1)
+            for i in range(o.rows):
+                o[i][0] = other[i]
+            other = o
         if (isinstance(other, Matrix)):
+            m = Matrix(self._rows, other._columns)
             if (self._columns != other._rows):
                 raise WrongDimensionsException("First matrix must have column count equal to second matrix's row count to perform this operation!")
             for i in range(m.rows):
@@ -204,9 +211,12 @@ class Matrix():
                     for k in range(self.columns):
                         m[i][j] += self[i][k] * other[k][j]
         else:
+            m = self.copy()
             for i in range(m.rows):
                 for j in range(m.columns):
-                    m[i][j] *= other            
+                    m[i][j] *= other
+        if (vec):
+            return [row[0] for row in m._mat]
         return m
            
     def __rmul__(self, other):
@@ -221,21 +231,21 @@ class Matrix():
         self._mat = (self * other)._mat
         
     def __div__(self, other):
-        """Muliply one matrix to inversed matrix or 1/number and return it."""
+        """Muliply one matrix by inversed matrix or 1/number and return it."""
         if (isinstance(other, Matrix)):
             return self * other.inversed()
         else:
             return self * (1/other)
         
     def __rdiv__(self, other):
-        """Muliply one matrix to inversed matrix in reversed order or 1/number and return it."""
+        """Muliply one matrix by inversed matrix in reversed order or 1/number and return it."""
         if (isinstance(other, Matrix)):
             return other * self.inversed()
         else:
             return self / other
         
     def __idiv__(self, other):
-        """Muliply one matrix to inversed matrix or 1/number and set result to current matrix."""
+        """Muliply one matrix by inversed matrix or 1/number and set result to current matrix."""
         self._mat = (self / other)._mat
         
     def __neg__(self):
@@ -418,4 +428,3 @@ class Matrix():
             for i in range(self.rows):
                 for j in range(self.columns):
                     self._mat[i][j] = unpack("f", f.read(calcsize("f")))[0]
-                    
