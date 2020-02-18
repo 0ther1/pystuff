@@ -134,7 +134,7 @@ class Table(Frame):
             raise ValueError("Adding column amount must be above zero!")
         for k in range(amount):                                 # for every new column
             for i, row in enumerate(self._matrix):              # for every row in model
-                new_cell = Entry(self, width=self._cell_width, bd=1) # create new cell
+                new_cell = Entry(self, width=self._cell_width, bd=1, state=self._state) # create new cell
                 row.append(new_cell)                             # append it to row
                 new_cell.grid(row=i+1, column=self.columns+1)    # place it on widget
             self._columns += 1                                  # increase column count
@@ -151,7 +151,7 @@ class Table(Frame):
         for k in range(amount):                                 # for every new row
             new_row = []                                         # new row
             for j in range(self.columns):                       # for column count
-                new_cell = Entry(self, width=self._cell_width, bd=1) # create new cell
+                new_cell = Entry(self, width=self._cell_width, bd=1, state=self._state) # create new cell
                 new_row.append(new_cell)                          # insert it in new row
                 new_cell.grid(row=self.rows+1, column=j+1)       # place it on widget
             self._matrix.append(new_row)                         # insert new row in model
@@ -224,8 +224,11 @@ class Table(Frame):
         if ((row < 0 or row >= self.rows) or (column < 0 or column >= self.columns)):   # verify index
             raise ValueError("Index out of range!")
         etr = self._matrix[row][column]                                                 # get entry
+        prev_state = etr["state"]
+        etr["state"] = "normal"
         etr.delete(0, END)                                                              # clear entry contents
         etr.insert(END, str(value))                                                     # set new entry contents
+        etr["state"] = prev_state
         
     def _update_labels(self):
         """[INTERNTAL] Update label count or/and it's contents."""
