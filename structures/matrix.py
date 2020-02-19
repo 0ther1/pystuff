@@ -293,7 +293,8 @@ class Matrix():
     def copy(self):
         """Return a copy of this matrix."""
         m = Matrix(self._rows, self._columns)
-        m._mat = self._mat.copy()
+        for i, row in enumerate(self._mat):
+            m._mat[i] = row.copy()
         return m
             
     def transpose(self):
