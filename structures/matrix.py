@@ -1,4 +1,5 @@
 from struct import pack, unpack, calcsize
+from math import sin, cos, radians
 
 class ZeroDeterminantException(Exception):
     """Exception in case of zero determinant."""
@@ -9,6 +10,9 @@ class WrongDimensionsException(Exception):
     """Exception in case of wrong matrix dimension."""
     def __init__(self, message: str=""):
         super().__init__("Matrix have wrong dimensions! " + message)
+
+class Matrix():
+    pass
 
 class Matrix():
     """Class representing mathematical Matrix."""
@@ -41,7 +45,7 @@ class Matrix():
             self.resize(columns=int(value))
             
     @staticmethod
-    def identity(size: int):
+    def identity(size: int) -> Matrix:
         """Create and return a new identity Matrix of given size (all elements are 0.0 except main diagonal - they are 1.0)."""
         out = Matrix(size, size)
         for i in range(size):
@@ -49,7 +53,7 @@ class Matrix():
         return out
     
     @staticmethod
-    def minor(mat, i: int, j: int):
+    def minor(mat, i: int, j: int) -> Matrix:
         """Get minor of given matrix (given matrix without `i`-th row and `j`-th column)."""
         if ((i >= mat.rows or i < 0) or (j >= mat.columns or j < 0)):
             raise IndexError
@@ -110,6 +114,58 @@ class Matrix():
                 mx = e
                 max_idx = i
         return max_idx
+    
+    @staticmethod
+    def make_translation(dx: float, dy: float, dz: float=None) -> Matrix:
+        """Make translation matrix 2d or 3d if dz is given."""
+        if (dz == None):
+            mat = Matrix.identity(3)
+            mat[0][2] = dx
+            mat[1][2] = dy
+        else:
+            mat = Matrix.identity(4)
+            mat[0][3] = dx
+            mat[1][3] = dy
+            mat[2][3] = dz
+        return mat
+    
+    @staticmethod
+    def make_rotation(angle_x: float, angle_y: float, angle_z: float=None) -> Matrix:
+        """Make rotation matrix 2d or 3d if angle_z is given."""
+        if (angle_z == None):
+            mat = Matrix.identity(2)
+        else:
+            mat_x = Matrix.identity(3)
+            mat_x[1][1] = cos(radians(angle_x))
+            mat_x[1][2] = -sin(radians(angle_x))
+            mat_x[2][1] = sin(radians(angle_x))
+            mat_x[2][2] = cos(radians(angle_x))
+            mat_y = Matrix.identity(3)
+            mat_y[0][0] = cos(radians(-angle_y))
+            mat_y[0][2] = -sin(radians(-angle_y))
+            mat_y[2][0] = sin(radians(-angle_y))
+            mat_y[2][2] = cos(radians(-angle_y))
+            mat_z = Matrix.identity(3)
+            mat_z[0][0] = cos(radians(angle_z))
+            mat_z[0][1] = -sin(radians(angle_z))
+            mat_z[1][0] = sin(radians(angle_z))
+            mat_z[1][1] = cos(radians(angle_z))
+            mat = mat_x * mat_y * mat_z
+        return mat
+    
+    @staticmethod
+    def make_scale(x: float, y: float, z: float=None) -> Matrix:
+        """Make scale matrix 2d or 3d if z is given."""
+        if (z == None):
+            mat = Matrix.identity(3)
+            mat[0][0] = x
+            mat[1][1] = y
+        else:
+            mat = Matrix.identity(4)
+            mat[0][0] = x
+            mat[1][1] = y
+            mat[2][2] = z
+        return mat
         
     def __getitem__(self, key):
         """Get row at `key` pos."""
@@ -290,7 +346,7 @@ class Matrix():
         elif (columns == 0):
             self.clear()
             
-    def copy(self):
+    def copy(self) -> Matrix:
         """Return a copy of this matrix."""
         m = Matrix(self._rows, self._columns)
         for i, row in enumerate(self._mat):
@@ -307,7 +363,7 @@ class Matrix():
         self._rows = m.rows
         self._mat = m._mat.copy()
             
-    def transposed(self):
+    def transposed(self) -> Matrix:
         """Get transposed version of this matrix."""
         m = self.copy()
         m.transpose()
@@ -326,7 +382,7 @@ class Matrix():
                 out[i][j] = 1/d * (-1) ** (i + j) * m.get_determinant()
         return out
     
-    def inversed(self):
+    def inversed(self) -> Matrix:
         """Get inversed version of this matrix."""
         m = self.copy()
         m.inverse()
