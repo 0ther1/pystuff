@@ -132,25 +132,23 @@ class Matrix():
     @staticmethod
     def make_rotation(angle_x: float, angle_y: float, angle_z: float=None) -> Matrix:
         """Make rotation matrix 2d or 3d if angle_z is given."""
-        if (angle_z == None):
-            mat = Matrix.identity(2)
-        else:
-            mat_x = Matrix.identity(3)
-            mat_x[1][1] = cos(radians(angle_x))
-            mat_x[1][2] = -sin(radians(angle_x))
-            mat_x[2][1] = sin(radians(angle_x))
-            mat_x[2][2] = cos(radians(angle_x))
-            mat_y = Matrix.identity(3)
-            mat_y[0][0] = cos(radians(-angle_y))
-            mat_y[0][2] = -sin(radians(-angle_y))
-            mat_y[2][0] = sin(radians(-angle_y))
-            mat_y[2][2] = cos(radians(-angle_y))
-            mat_z = Matrix.identity(3)
+        mat_x = Matrix.identity(3)
+        mat_x[1][1] = cos(radians(angle_x))
+        mat_x[1][2] = -sin(radians(angle_x))
+        mat_x[2][1] = sin(radians(angle_x))
+        mat_x[2][2] = cos(radians(angle_x))
+        mat_y = Matrix.identity(3)
+        mat_y[0][0] = cos(radians(angle_y))
+        mat_y[0][2] = sin(radians(angle_y))
+        mat_y[2][0] = -sin(radians(angle_y))
+        mat_y[2][2] = cos(radians(angle_y))
+        mat_z = Matrix.identity(3)
+        if (angle_z != None):
             mat_z[0][0] = cos(radians(angle_z))
             mat_z[0][1] = -sin(radians(angle_z))
             mat_z[1][0] = sin(radians(angle_z))
             mat_z[1][1] = cos(radians(angle_z))
-            mat = mat_x * mat_y * mat_z
+        mat = mat_x * mat_y * mat_z
         return mat
     
     @staticmethod
@@ -175,6 +173,8 @@ class Matrix():
         """Set row at `key` pos."""
         if (len(value) == self._columns):
             self._mat[key] = list(value)
+        else:
+            raise ValueError("`value` must have same length as matrix column count.")
             
     def __iter__(self):
         """Iterate through all elements of matrix."""
