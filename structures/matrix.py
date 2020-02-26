@@ -12,9 +12,6 @@ class WrongDimensionsException(Exception):
         super().__init__("Matrix have wrong dimensions! " + message)
 
 class Matrix():
-    pass
-
-class Matrix():
     """Class representing mathematical Matrix."""
     def __init__(self, rows: int, columns: int):
         """Create a new Matrix object. `rows` - count of rows in this matrix, `columns` - count of columns in this matrix."""
@@ -45,7 +42,7 @@ class Matrix():
             self.resize(columns=int(value))
             
     @staticmethod
-    def identity(size: int) -> Matrix:
+    def identity(size: int):
         """Create and return a new identity Matrix of given size (all elements are 0.0 except main diagonal - they are 1.0)."""
         out = Matrix(size, size)
         for i in range(size):
@@ -53,7 +50,7 @@ class Matrix():
         return out
     
     @staticmethod
-    def minor(mat, i: int, j: int) -> Matrix:
+    def minor(mat, i: int, j: int):
         """Get minor of given matrix (given matrix without `i`-th row and `j`-th column)."""
         if ((i >= mat.rows or i < 0) or (j >= mat.columns or j < 0)):
             raise IndexError
@@ -88,7 +85,7 @@ class Matrix():
             return d
                     
     @staticmethod
-    def gauss(mat, vec: iter) -> list:
+    def gauss(mat, vec: list) -> list:
         """Solve a system of linear equations with Gauss method. Requires matrix and a vector. Returns vector of results."""
         if (len(vec) != mat.rows):
             raise ValueError("Vector must have same length as matrix row count to perform this operation!")
@@ -116,7 +113,7 @@ class Matrix():
         return max_idx
     
     @staticmethod
-    def make_translation(dx: float, dy: float, dz: float=None) -> Matrix:
+    def make_translation(dx: float, dy: float, dz: float=None):
         """Make translation matrix 2d or 3d if dz is given."""
         if (dz == None):
             mat = Matrix.identity(3)
@@ -130,7 +127,7 @@ class Matrix():
         return mat
     
     @staticmethod
-    def make_rotation(angle_x: float, angle_y: float, angle_z: float=None) -> Matrix:
+    def make_rotation(angle_x: float, angle_y: float, angle_z: float=None):
         """Make rotation matrix 2d or 3d if angle_z is given."""
         mat_x = Matrix.identity(3)
         mat_x[1][1] = cos(radians(angle_x))
@@ -152,7 +149,7 @@ class Matrix():
         return mat
     
     @staticmethod
-    def make_scale(x: float, y: float, z: float=None) -> Matrix:
+    def make_scale(x: float, y: float, z: float=None):
         """Make scale matrix 2d or 3d if z is given."""
         if (z == None):
             mat = Matrix.identity(3)
@@ -346,7 +343,7 @@ class Matrix():
         elif (columns == 0):
             self.clear()
             
-    def copy(self) -> Matrix:
+    def copy(self):
         """Return a copy of this matrix."""
         m = Matrix(self._rows, self._columns)
         for i, row in enumerate(self._mat):
@@ -363,7 +360,7 @@ class Matrix():
         self._rows = m.rows
         self._mat = m._mat.copy()
             
-    def transposed(self) -> Matrix:
+    def transposed(self):
         """Get transposed version of this matrix."""
         m = self.copy()
         m.transpose()
@@ -382,7 +379,7 @@ class Matrix():
                 out[i][j] = 1/d * (-1) ** (i + j) * m.get_determinant()
         return out
     
-    def inversed(self) -> Matrix:
+    def inversed(self):
         """Get inversed version of this matrix."""
         m = self.copy()
         m.inverse()
@@ -412,14 +409,14 @@ class Matrix():
         for row in self._mat:
             row[j1], row[j2] = row[j2], row[j1]
             
-    def insert_row(self, vec: iter, i: int):
+    def insert_row(self, vec: list, i: int):
         """Insert `vec` before `i`-th row."""
         if (len(vec) != self.columns):
             raise ValueError("`vec` must have length equal matrix column count!")
         self._mat.insert(i, list(vec))
         self._rows += 1
         
-    def insert_column(self, vec: iter, j: int):
+    def insert_column(self, vec: list, j: int):
         """Insert `vec` before `j`-th column."""
         if (len(vec) != self.rows):
             raise ValueError("`vec` must have length equal matrix row count!")        
