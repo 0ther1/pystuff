@@ -1,5 +1,5 @@
 # ==============-Math functions-============== #
-from math import sin, cos
+from math import sin, cos, acos
 
 def lerp(a, b, factor: float):
     """Lineary interpolate between [a;b] by factor.
@@ -74,6 +74,43 @@ def distance(p1: iter, p2: iter) -> float:
         return summ ** 0.5
     else:
         raise ValueError("`p1` and `p2` must have same lenghts!")
+    
+def length(vec: iter) -> float:
+    """Get vector length."""
+    summ = 0.0
+    for co in vec:
+        summ += co ** 2
+    return summ ** 0.5
+
+def angle_between(v1: iter, v2: iter) -> float:
+    """Get angle between 2 vectors in radians."""
+    return acos(dot_product(v1, v2) / (length(v1) * length(v2)) )
+
+def dot_product(v1: iter, v2: iter) -> float:
+    """Get a dot product between 2 vectors."""
+    if (len(v1) == len(v2)):
+        summ = 0.0
+        for i, co in enumerate(v1):
+            summ += co * v2[i]
+        return summ
+    else:
+        raise ValueError("`v1` and `v2` must have same lenghts!")
+    
+def cross_product(v1: iter, v2: iter) -> list:
+    """Get a cross product between 2 vectors (3D)."""
+    if (len(v1) != len(v2)):
+        raise ValueError("`v1` and `v2` must have same lenghts!")   
+    if (len(v1) != 3):
+        raise ValueError("Cross product can only be calculated for 3D vectors!")
+    return [v1[1] * v2[2] - v1[2] * v2[1], v1[2] * v2[0] - v1[0] * v2[2], v1[0] * v2[1] - v1[1] * v2[0]]
+        
+def triple_product(v1: iter, v2: iter, v3: iter) -> float:
+    """Get a triple product between 3 vectors (3D)."""
+    if (len(v1) != len(v2) != len(v3)):
+        raise ValueError("`v1` and `v2` must have same lenghts!")   
+    if (len(v1) != 3):
+        raise ValueError("Triple product can be calculated for 3D vectors!")
+    return dot_product(v1, cross_product(v2, v3))
     
 def rotate_point(p: iter, angle: float, center: iter=[0, 0]):
     """Rotate 2D point around another.
