@@ -13,6 +13,19 @@ def nlr(node):
         if (node.left):
             hist.append(node.left)
             
+def nrl(node):
+    """Iteratively visit tree in reversed pre-order starting from `node`."""
+    if (not node):
+        return
+    hist = [node]
+    while (hist):
+        node = hist.pop()
+        yield node
+        if (node.left):
+            hist.append(node.left)
+        if (node.right):
+            hist.append(node.right)
+            
 def lnr(node):
     """Iteratively visit tree in in-order starting from `node`."""
     hist = []
@@ -53,6 +66,22 @@ def lrn(node):
                 yield peek_node
                 last_node = hist.pop()
                 
+def rln(node):
+    """Iteratively visit tree in reversed post-order starting from `node`."""
+    hist = []
+    last_node = None
+    while (hist or node):
+        if (node):
+            hist.append(node)
+            node = node.right
+        else:
+            peek_node = hist[-1]
+            if (peek_node.left and last_node != peek_node.left):
+                node = peek_node.left
+            else:
+                yield peek_node
+                last_node = hist.pop()
+                
 def in_depth(node):
     """Iteratively visit tree in level-order starting from `node`."""
     queue = [node]
@@ -73,12 +102,12 @@ class BinNode():
         [right] - right child of this node,
         [parent] - parent of this node."""
         self.data = data
-        if (left and not isinstance(left, BinNode)):
-            raise TypeError("`left` must be a BinNode object!")
-        if (right and not isinstance(right, BinNode)):
-            raise TypeError("`right` must be a BinNode object!")
-        if (parent and not isinstance(parent, BinNode)):
-            raise TypeError("`parent` must be a BinNode object!")        
+        if (left and not issubclass(type(left), BinNode)):
+            raise TypeError("`left` must be a BinNode derived object!")
+        if (right and not issubclass(type(right), BinNode)):
+            raise TypeError("`right` must be a BinNode derived object!")
+        if (parent and not issubclass(type(parent), BinNode)):
+            raise TypeError("`parent` must be a BinNode derived object!")        
         self._left = left
         self._right = right
         self._parent = parent
@@ -100,7 +129,7 @@ class BinNode():
     
     def copy(self):
         """Create and return a copy of this node."""
-        return BinNode(self.data, self.left, self.right, self.parent)
+        return self.__class__(self.data, self.left, self.right, self.parent)
     
 class BinTree():
     """Binary tree."""
@@ -113,7 +142,7 @@ class BinTree():
         self._size = 0
             
     def __contains__(self, value):
-        for n in self:
+        for n in lnr(self.root):
             if (n.data == value):
                 return True
         return False
@@ -184,13 +213,7 @@ class BinTree():
         """Create and return a new tree from given values.
         `values` must be iterable."""
         tree = BinTree()
-        datatype = None
         for v in values:
-            if (not datatype):
-                datatype = type(v)
-            else:
-                if (type(v) != datatype):
-                    raise ValueError("Elements in `values` are have different types!")
             tree.insert(v)
         return tree
     
@@ -313,3 +336,4 @@ class BinTree():
                     self.insert(readfunc(file))
                 else:
                     self.insert(self._read_element(file, data_type))
+                    
