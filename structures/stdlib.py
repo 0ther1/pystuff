@@ -14,22 +14,6 @@ def lerp(a, b, factor: float):
     else:
         return a + (b - a) * factor
     
-def lerp_color(color1: str, color2: str, factor: float) -> str:
-    """Lieary interpolate between two colors by factor.
-    `color1`: - color in hex value in form '#RRGGBB' to interpolate from
-    `color2`: - color in hex value in form '#RRGGBB' to interpolate to
-    `factor`: - lerp factor."""
-    c1r = int(color1[1:3], 16)
-    c1g = int(color1[3:5], 16)
-    c1b = int(color1[5:], 16)
-    c2r = int(color2[1:3], 16)
-    c2g = int(color2[3:5], 16)
-    c2b = int(color2[5:], 16)
-    c3r = round(lerp(c1r, c2r, factor))
-    c3g = round(lerp(c1g, c2g, factor))
-    c3b = round(lerp(c1b, c2b, factor))
-    return "#%02X%02X%02X" % (c3r, c3g, c3b)
-    
 def clamp(value, floor, ceil):
     """Clamp value by up and down limits.
     `value`: var - value to clamp
