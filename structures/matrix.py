@@ -1,6 +1,8 @@
 from struct import pack, unpack, calcsize
 from math import sin, cos, radians
 
+from vector import Vector
+
 class ZeroDeterminantException(Exception):
     """Exception in case of zero determinant."""
     def __init__(self):
@@ -19,7 +21,7 @@ class Matrix():
             raise ValueError("Matrix cannot have negative dimensions!")
         self._rows = rows
         self._columns = columns
-        self._mat = [[0.0 for j in range(self._columns)] for i in range(self._rows)]
+        self._mat = [Vector([0.0 for j in range(self._columns)]) for i in range(self._rows)]
         
     @property
     def rows(self):
@@ -85,14 +87,14 @@ class Matrix():
             return d
                     
     @staticmethod
-    def gauss(mat, vec: list) -> list:
+    def gauss(mat, vec: Vector) -> Vector:
         """Solve a system of linear equations with Gauss method. Requires matrix and a vector. Returns vector of results."""
         if (len(vec) != mat.rows):
             raise ValueError("Vector must have same length as matrix row count to perform this operation!")
         m = mat.copy()
         m.insert_column(vec, m.columns)
         m.to_lower_triangle()
-        result = [0.0 for i in range(len(vec))]
+        result = Vector([0.0 for i in range(len(vec))])
         for i in range(m.rows - 1, -1, -1):
             summ = 0.0
             for j in range(m.columns - 2, i, -1):
@@ -169,7 +171,12 @@ class Matrix():
     def __setitem__(self, key, value):
         """Set row at `key` pos."""
         if (len(value) == self._columns):
-            self._mat[key] = list(value)
+            if (isinstance(value, (list, tuple))):
+                self._mat[key] = Vector(value)
+            elif (isinstance(value, Vector)):
+                self._mat[key] = value
+            else:
+                raise TypeError("`value` must be list, tuple or Vector object.")
         else:
             raise ValueError("`value` must have same length as matrix column count.")
             
@@ -247,13 +254,17 @@ class Matrix():
         
     def __mul__(self, other):
         """Multiply matrix by another matrix, sequence or number."""
-        vec = False
-        if (isinstance(other, (list, tuple))):
-            vec = True
-            o = Matrix(len(other), 1)
-            for i in range(o.rows):
-                o[i][0] = other[i]
-            other = o
+        if (isinstance(other, (list, tuple, Vector))):
+            if (self._rows != len(other)):
+                raise ValueError("`other` must have length equal to matrix row count.")
+            if (not isinstance(other, Vector)):
+                other = Vector(other)
+            result = Vector()
+            for i in range(self.columns):
+                result.append(0.0)
+                for k in range(self.rows):
+                    result[i] += self[k][i] * other[k]
+            return result
         if (isinstance(other, Matrix)):
             m = Matrix(self._rows, other._columns)
             if (self._columns != other._rows):
@@ -268,12 +279,11 @@ class Matrix():
             for i in range(m.rows):
                 for j in range(m.columns):
                     m[i][j] *= other
-        if (vec):
-            return [row[0] for row in m._mat]
         return m
            
     def __rmul__(self, other):
         """Multiply to one matrix another matrix in reversed order or number and return it."""
+        print("FUCK")
         if (isinstance(other, Matrix)):
             return other * self
         else:
@@ -318,9 +328,9 @@ class Matrix():
         """Resize this matrix to given sizes. -1 - do not resize."""
         if (rows > self._rows):
             if (self._columns > 0):
-                self._mat = [[0.0 for j in range(self._columns)] for i in range(rows)]
+                self._mat = [Vector([0.0 for j in range(self._columns)]) for i in range(rows)]
             else:
-                self._mat = [[0.0] for i in range(rows)]
+                self._mat = [Vector([0.0]) for i in range(rows)]
                 self._columns = 1
             self._rows = rows
         elif (0 < rows < self._rows):
@@ -409,17 +419,24 @@ class Matrix():
         for row in self._mat:
             row[j1], row[j2] = row[j2], row[j1]
             
-    def insert_row(self, vec: list, i: int):
+    def insert_row(self, vec: Vector, i: int):
         """Insert `vec` before `i`-th row."""
         if (len(vec) != self.columns):
             raise ValueError("`vec` must have length equal matrix column count!")
-        self._mat.insert(i, list(vec))
+        if (isinstance(vec, (list, tuple, Vector))):
+            if (not isinstance(vec, Vector)):
+                vec = Vector(vec)
+        else:
+            raise TypeError("`vec` must be a list, tuple or Vector object.")
+        self._mat.insert(i, vec)
         self._rows += 1
         
-    def insert_column(self, vec: list, j: int):
+    def insert_column(self, vec: Vector, j: int):
         """Insert `vec` before `j`-th column."""
         if (len(vec) != self.rows):
-            raise ValueError("`vec` must have length equal matrix row count!")        
+            raise ValueError("`vec` must have length equal matrix row count!")
+        if (not isinstance(vec, (list, tuple, Vector))):
+            raise TypeError("`vec` must be a list, tuple or Vector object.")        
         for i, row in enumerate(self._mat):
             row.insert(j, vec[i])
         self._columns += 1
@@ -482,3 +499,4 @@ class Matrix():
             for i in range(self.rows):
                 for j in range(self.columns):
                     self._mat[i][j] = unpack("f", f.read(calcsize("f")))[0]
+                    
