@@ -171,4 +171,4 @@ class Vector():
     
     def angle_between(self, other) -> float:
         """Get angle between 2 vectors in radians."""
-        return acos(self.dot_product(other) / (self.length * other.length))    
+        return acos(self.dot_product(other) / (self.length() * other.length()))    
