@@ -58,9 +58,9 @@ class PlotDrawer(Frame):
         super().__init__(master, **kw)      # init base class
         W = 500                             # width of widget
         H = 500                             # height of widget
-        if ("width" in kw.keys()):          # if width is given in kw
+        if ("width" in kw):                 # if width is given in kw
             W = kw["width"]                 # set given width
-        if ("height" in kw.keys()):         # if height is given in kw
+        if ("height" in kw):                # if height is given in kw
             H = kw["height"]                # set given height
         self._plots = plots                 # [INTERNAL] plot list
         self._scale = scale                 # [INTERNAL] grid and plot scale
@@ -137,6 +137,8 @@ class PlotDrawer(Frame):
         
     def _move_grid(self, event):
         """[INTERNAL] handler for mouse canvas movement."""
+        if (not self._user_scaled):
+            self._user_scaled = True
         self._screen_center[0] -= self._last_mouse_pos[0] - event.x
         self._screen_center[1] -= self._last_mouse_pos[1] - event.y
         self._last_mouse_pos = [event.x, event.y]
@@ -267,7 +269,7 @@ class PlotDrawer(Frame):
             
     def _draw_points(self):
         """[INTERNAL] draw all points of plot."""
-        point_size = 4/((self.scale//10)+1)
+        point_size = 4 / self.scale# /((self.scale//10)+1)
         for plot in self._plots:
             last_point = None                        # previous point
             for p in plot.points:                   # for every point
@@ -315,4 +317,3 @@ class PlotDrawer(Frame):
         self._draw_points()  # redraw points
         self._scale_label["text"] = "Scale: %1.1f" % self.scale
         super().update()    # tkinter's update
-        
