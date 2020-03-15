@@ -42,7 +42,9 @@ class LabelEntry(Frame):
         if ("textvariable" in kw):
             kw.pop("textvariable")
         if ("width" in kw):
-            kw.pop("width")        
+            kw.pop("width")
+        if ("state" in kw and kw["state"] == "readonly"):
+            kw["state"] = NORMAL
         self._label = Label(self, kw)
         self._label.pack(side=LEFT, fill=X, expand=True)
         
@@ -101,7 +103,9 @@ class LabelSpinbox(Frame):
         if ("textvariable" in kw):
             kw.pop("textvariable")
         if ("width" in kw):
-            kw.pop("width")        
+            kw.pop("width")
+        if ("state" in kw and kw["state"] == "readonly"):
+            kw["state"] = NORMAL            
         self._label = Label(self, kw)
         self._label.pack(side=LEFT, fill=X, expand=True)
         
