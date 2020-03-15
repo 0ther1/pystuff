@@ -164,15 +164,26 @@ class PetriNet:
                 return t
         raise ValueError("Transition '%s' is not in net." % name)
     
-    def add_place(self, place: Place):
-        """Add place to this net. Raises ValueError if given place already in this net."""
+    def add_place(self, place: Place, autoname=True) -> str:
+        """Add place to this net and return it's name. Raises ValueError if given place already in this net.
+        [autoname] - give this place name 'p*' where * lowest available index."""
         if (place in self._places):
             raise ValueError("Given place '%s' is already in net." % place.name)
+        if (autoname):
+            i = 0
+            while (True):
+                try:
+                    self.find_place("p%d" % i)
+                except ValueError:
+                    break
+                i += 1
+            place.name = "p%d" % i
         self._places.append(place)
         self._places.sort(key=lambda p: p.name)
+        return place.name
         
-    def remove_place(self, place: [Place, str]):
-        """Remove place from this net. Raises ValueError if given place is not in this net."""
+    def remove_place(self, place: [Place, str]) -> Place:
+        """Remove place from this net and return it. Raises ValueError if given place is not in this net."""
         if (isinstance(place, str)):
             place = self.find_place(place)
         elif (not isinstance(place, Place)):
@@ -180,16 +191,31 @@ class PetriNet:
         if (place not in self._places):
             raise ValueError("Given place '%s' is not in net." % place.name)
         self._places.remove(place)
+        for t in self._transitions:
+            t._inputs = list(filter(lambda l: l[0] != place, t._inputs))
+            t._outputs = list(filter(lambda l: l[0] != place, t._outputs))
+        return place
         
-    def add_transition(self, transition: Transition):
-        """Add transition to this net. Raises ValueError if given transition already in this net."""
+    def add_transition(self, transition: Transition, autoname=True) -> str:
+        """Add transition to this net and returns it's name. Raises ValueError if given transition already in this net.
+        [autoname] - give this transition name 't*' where * lowest available index."""
         if (transition in self._transitions):
             raise ValueError("Given transition '%s' is already in net." % transition.name)
+        if (autoname):
+            i = 0
+            while (True):
+                try:
+                    self.find_transition("t%d" % i)
+                except ValueError:
+                    break
+                i += 1
+            transition.name = "t%d" % i        
         self._transitions.append(transition)
         self._transitions.sort(key=lambda t: t.name)
+        return transition.name
         
-    def remove_transition(self, transition: [Transition, str]):
-        """Remove transition from this net. Raises ValueError if given transition is not in this net."""
+    def remove_transition(self, transition: [Transition, str]) -> Transition:
+        """Remove transition from this net and return it. Raises ValueError if given transition is not in this net."""
         if (isinstance(transition, str)):
             transition = self.find_transition(transition)
         elif (not isinstance(transition, Transition)):
@@ -197,6 +223,7 @@ class PetriNet:
         if (transition not in self._transitions):
             raise ValueError("Given transition '%s' is not in net." % transition.name)
         self._transitions.remove(transition)
+        return transition
         
     def exec(self, transitions: list):
         """Execute this network in given order.
@@ -440,3 +467,61 @@ class PetriNet:
                 mat[i][j] = -self.input_arc_count(p, t) + self.output_arc_count(p, t)
         return mat
     
+    def clear(self):
+        """Clear this net."""
+        self._places.clear()
+        self._transitions.clear()
+    
+    def write(self, filepath: str):
+        """Write net data to file."""
+        with open(filepath, "wb") as file:
+            file.write(int.to_bytes(len(self._places), 2, "little"))
+            for p in self._places:
+                file.write(p.name.encode() + b"\x00")
+                file.write(int.to_bytes(p.tokens, 2, "little"))
+            file.write(int.to_bytes(len(self._transitions), 2, "little"))
+            for t in self._transitions:
+                file.write(t.name.encode() + b"\x00")
+                file.write(int.to_bytes(len(t.inputs), 2, "little"))
+                for i in t.inputs:
+                    file.write(int.to_bytes(self._places.index(i[0]), 2, "little"))
+                    file.write(int.to_bytes(i[1], 2, "little"))
+                file.write(int.to_bytes(len(t.outputs), 2, "little"))
+                for o in t.outputs:
+                    file.write(int.to_bytes(self._places.index(o[0]), 2, "little"))
+                    file.write(int.to_bytes(o[1], 2, "little"))
+                    
+    def read(self, filepath: str):
+        """Read net data from file."""
+        self.clear()
+        with open(filepath, "rb") as file:
+            place_count = int.from_bytes(file.read(2), "little")
+            for i in range(place_count):
+                name = ""
+                while (True):
+                    char = file.read(1)
+                    if (char == b"\x00"):
+                        break
+                    name += char.decode()
+                tokens = int.from_bytes(file.read(2), "little")
+                self.add_place(Place(name, tokens))
+            trans_count = int.from_bytes(file.read(2), "little")
+            for i in range(trans_count):
+                name = ""
+                while (True):
+                    char = file.read(1)
+                    if (char == b"\x00"):
+                        break
+                    name += char.decode()
+                t = Transition(name)
+                self.add_transition(t)
+                input_count = int.from_bytes(file.read(2), "little")
+                for j in range(input_count):
+                    index = int.from_bytes(file.read(2), "little")
+                    arc_count = int.from_bytes(file.read(2), "little")
+                    self.connect(self._places[index], t, arc_count)
+                output_count = int.from_bytes(file.read(2), "little")
+                for j in range(output_count):
+                    index = int.from_bytes(file.read(2), "little")
+                    arc_count = int.from_bytes(file.read(2), "little")
+                    self.connect(self._places[index], t, arc_count, True)
